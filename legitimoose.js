@@ -9,6 +9,7 @@ var accurateMode = process.argv[2] === "true";
 
 if(accurateMode) console.log("Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal.")
 else console.log("Accurate mode is disabled! (The following data will not be scraped: resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified)");
+
 createBot();
 
 /* functions */;
@@ -67,7 +68,6 @@ async function createBot() {
         worldData.saves_dat_files = null;
         worldData.saves_player_data = null;
         worldData.date_modified = null;
-        
         if(accurateMode){ //resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified
           await collectWorldInfo(worldData.uuid);
           await sleep(1000);
@@ -75,10 +75,10 @@ async function createBot() {
 
         //console.log(worldData);
         allWorldData.push(worldData);
-        console.log(` | Progress:`);
-        console.log(` |   Page (${page}/${max})`); 
-        console.log(` |   World (${page*(i+1)}/~${max*27}) (${((page * (i + 1)) / (max * 27) * 100).toFixed(2)}%)\n`);
       }
+      console.log(` | Progress:`);
+      console.log(` |   Page (${page}/${max})`); 
+      //console.log(` |   World (${page*(i+1)}/~${max*27}) (${((page * (i + 1)) / (max * 27) * 100).toFixed(2)}%)\n`);
       if(page === max){
         break;
       }
@@ -113,10 +113,13 @@ async function createBot() {
         });
       }
     }
+    if (!fs.existsSync("data")) fs.mkdirSync("data")
+
     console.log("Exporting JSON file...");
-    fs.writeFileSync("./worlds.json", JSON.stringify(allWorldData));
+    fs.writeFileSync(`./data/${getPaddedDate()}.json`, JSON.stringify(allWorldData));
     console.log("Exporting CSV file...");
-    fs.writeFileSync("./worlds.csv", convertToCSV(allWorldData));
+    fs.writeFileSync(`./data/${getPaddedDate()}.csv`, convertToCSV(allWorldData));
+
     console.log("Finished! Quitting...");
     bot.quit();
     process.exit();
@@ -165,6 +168,15 @@ async function createBot() {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getPaddedDate() {
+  const today = new Date();
+  const year = today.getFullYear().toString().padStart(4, '0');
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 function convertToCSV(object) {
