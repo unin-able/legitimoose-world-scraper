@@ -8,7 +8,6 @@ var allWorldData = [];
 var worldData = {};
 var accurateMode = process.argv[2] === "true";
 
-//if(accurateMode) console.log("Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal.")
 console.log(accurateMode ? 
   "Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal."
 : "Accurate mode is disabled! (The following data will not be scraped: resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified)");
@@ -41,6 +40,7 @@ async function createBot() {
       });
       bot.chat("/worlds");
     });
+
     await sleep(1000); // Prevent "Slow down!"
     var inventory = window.slots;
     const max = parseInt(window.title.value.match(/\d+/g)[1]);
@@ -66,17 +66,17 @@ async function createBot() {
         worldData.date_created = Date.parse(lore[3].split(/Created |"}/)[1])/1000; // gets string between 'Created ' and '"}', then parses into unix time
         worldData.has_resource_pack = lore[4].includes("Resource pack included!");
         worldData.player_count = lore[1].includes("World offline") ? -1 : parseInt(lore[1].match(/\d+/)[0], 10);
-        worldData.resource_pack_url = null;
-        worldData.resource_pack_hash = null;
-        worldData.saves_dat_files = null;
-        worldData.saves_player_data = null;
-        worldData.date_modified = null;
+
         if(accurateMode){ //resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified
+          worldData.resource_pack_url = null;
+          worldData.resource_pack_hash = null;
+          worldData.saves_dat_files = null;
+          worldData.saves_player_data = null;
+          worldData.date_modified = null;
           await collectWorldInfo(worldData.uuid);
           await sleep(1000);
         }
 
-        //console.log(worldData);
         allWorldData.push(worldData);
       }
       console.log(`Page (${page}/${max})`); 
@@ -157,7 +157,7 @@ async function createBot() {
             worldData.player_count = parseInt(json.extra[0].text, 10);
           }
           else if(json.text === "Date Modified: "){    
-            worldData.date_modified = "?"; // command returns nonsense, so set to "?" for now
+            worldData.date_modified = -1; // command returns nonsense, so set to -1 for now
             bot.removeListener('message', handleMessage);
             resolve();
           }
