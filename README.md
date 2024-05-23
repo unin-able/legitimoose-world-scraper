@@ -2,8 +2,7 @@
 Node.js Mineflayer bot to scrape the `legitimoose.com` server's worlds.
 
 #### Note
-This current repository does not include data scraped from the server, use my [legitimoose-world-data](https://github.com/unin-able/legitimoose-world-data) repository for the data.
-
+This current repository does not include data scraped from the server, view my [legitimoose-world-data](https://github.com/unin-able/legitimoose-world-data) repository for non-accurate mode data.
 ## About
 - Uses a script to scrape the server using a Mineflayer bot, and exports a `.csv` and `.json` file with the date in a folder named `world_data`
 - Data exported includes:
