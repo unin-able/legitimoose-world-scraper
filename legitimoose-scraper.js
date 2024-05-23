@@ -110,7 +110,7 @@ async function createBot() {
                 bot.removeListener("updateSlot:26", handleUpdateSlot)
                 resolve(_window)
               }, 8000); 
-              let handleUpdateSlot = async (_, newItem) => {
+              let handleUpdateSlot = async () => {
                 clearTimeout(timeout);
                 resolve(_window);
               }
