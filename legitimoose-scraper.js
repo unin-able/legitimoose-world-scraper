@@ -67,7 +67,7 @@ async function createBot() {
         worldData.has_resource_pack = lore[4].includes("Resource pack included!");
         worldData.player_count = lore[1].includes("World offline") ? -1 : parseInt(lore[1].match(/\d+/)[0], 10);
 
-        if(accurateMode){ //resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified
+        if(accurateMode){ 
           worldData.resource_pack_url = null;
           worldData.resource_pack_hash = null;
           worldData.saves_dat_files = null;
