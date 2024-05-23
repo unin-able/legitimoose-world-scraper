@@ -105,11 +105,11 @@ async function createBot() {
             bot.once("windowOpen", (_window) => {
               bot.removeListener("message", handleMessage); 
 
-              // prevents listener randomly not running
+              // backup if updateSlot listener stops working randomly
               let timeout = setTimeout(() => { 
                 bot.removeListener("updateSlot:26", handleUpdateSlot)
                 resolve(_window)
-              }, 5000); 
+              }, 8000); 
               let handleUpdateSlot = async (_, newItem) => {
                 clearTimeout(timeout);
                 resolve(_window);
