@@ -1,4 +1,5 @@
 /* init */;
+process.chdir(__dirname);
 const fs = require('fs');
 const mineflayer = require('mineflayer');
 const {Authflow} = require('prismarine-auth');
@@ -7,8 +8,10 @@ var allWorldData = [];
 var worldData = {};
 var accurateMode = process.argv[2] === "true";
 
-if(accurateMode) console.log("Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal.")
-else console.log("Accurate mode is disabled! (The following data will not be scraped: resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified)");
+//if(accurateMode) console.log("Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal.")
+console.log(accurateMode ? 
+  "Accurate mode is enabled! (CAUTION: Very slow!) To disable, remove the \"true\" as an argument in your terminal."
+: "Accurate mode is disabled! (The following data will not be scraped: resource_pack_url, resource_pack_hash, saves_dat_files, saves_player_data, date_modified)");
 
 createBot();
 
@@ -76,9 +79,7 @@ async function createBot() {
         //console.log(worldData);
         allWorldData.push(worldData);
       }
-      console.log(` | Progress:`);
-      console.log(` |   Page (${page}/${max})`); 
-      //console.log(` |   World (${page*(i+1)}/~${max*27}) (${((page * (i + 1)) / (max * 27) * 100).toFixed(2)}%)\n`);
+      console.log(`Page (${page}/${max})`); 
       if(page === max){
         break;
       }
@@ -102,10 +103,19 @@ async function createBot() {
             };
             bot.on("message", handleMessage);
             bot.once("windowOpen", (_window) => {
-              _window.once("updateSlot:26", async (_, newItem) => {
-                bot.removeListener("message", handleMessage);
+              bot.removeListener("message", handleMessage); 
+
+              // prevents listener randomly not running
+              let timeout = setTimeout(() => { 
+                bot.removeListener("updateSlot:26", handleUpdateSlot)
+                resolve(_window)
+              }, 5000); 
+              let handleUpdateSlot = async (_, newItem) => {
+                clearTimeout(timeout);
                 resolve(_window);
-              });
+              }
+
+              _window.once("updateSlot:26", handleUpdateSlot);
             });
         
             bot.simpleClick.leftMouse(32);
@@ -113,12 +123,13 @@ async function createBot() {
         });
       }
     }
-    if (!fs.existsSync("data")) fs.mkdirSync("data")
-
+    if (!fs.existsSync("world_data")) fs.mkdirSync("world_data")
+    
+    let date = getPaddedDate();
     console.log("Exporting JSON file...");
-    fs.writeFileSync(`./data/${getPaddedDate()}.json`, JSON.stringify(allWorldData));
+    fs.writeFileSync(`./world_data/${date}.json`, JSON.stringify(allWorldData));
     console.log("Exporting CSV file...");
-    fs.writeFileSync(`./data/${getPaddedDate()}.csv`, convertToCSV(allWorldData));
+    fs.writeFileSync(`./world_data/${date}.csv`, convertToCSV(allWorldData));
 
     console.log("Finished! Quitting...");
     bot.quit();
@@ -133,7 +144,6 @@ async function createBot() {
         }
         else if(message.json.extra && (message.json.translate != "%s" || message.json.extra[0].text != "[")){ // if actual world info message
           var json = message.json;
-
           if(json.text === "Resource Pack Url: "){
             worldData.resource_pack_url = json.extra[0].text === 'null' ? null : json.extra[0].text;
           }
@@ -171,12 +181,13 @@ function sleep(ms) {
 }
 
 function getPaddedDate() {
-  const today = new Date();
-  const year = today.getFullYear().toString().padStart(4, '0');
-  const month = (today.getMonth() + 1).toString().padStart(2, '0');
-  const day = today.getDate().toString().padStart(2, '0');
+  const date = new Date();
+  const year = date.getFullYear().toString().padStart(4, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hour = date.getHours().toString().padStart(2, '0');
 
-  return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day}-${hour}`;
 }
 
 function convertToCSV(object) {
